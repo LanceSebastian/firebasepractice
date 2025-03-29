@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "746333601632",
+    "project_id": "firestore-practise-1c917",
+    "storage_bucket": "firestore-practise-1c917.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:746333601632:android:fbb59f9fd97c5c88dbe805",
+        "android_client_info": {
+          "package_name": "uk.ac.aber.dcs.firestorepractise"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7-KfT7rvg65ln55Ew4kEIdQFb7BXg44A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
