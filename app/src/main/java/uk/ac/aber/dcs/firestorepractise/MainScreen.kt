@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import uk.ac.aber.dcs.firestorepractise.ui.theme.FirestorePractiseTheme
 import java.time.Instant
 import java.time.ZoneId
@@ -33,7 +34,11 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun TopMainScreen(userViewModel: UserViewModel, context: ComponentActivity? = null){
+fun TopMainScreen(
+    userViewModel: UserViewModel,
+    navController: NavController,
+    context: ComponentActivity? = null
+){
     val posts by userViewModel.posts.observeAsState(emptyList())
     MainScreen(
         addUser = { user, thisContext ->

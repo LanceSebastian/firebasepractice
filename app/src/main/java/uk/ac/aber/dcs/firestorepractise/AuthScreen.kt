@@ -19,12 +19,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseUser
 import uk.ac.aber.dcs.firestorepractise.ui.theme.FirestorePractiseTheme
 
 @Composable
 fun TopAuthScreen(
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    navController: NavHostController,
 ){
     val user by authViewModel.user.observeAsState()
     val authStatus by authViewModel.authStatus.observeAsState()

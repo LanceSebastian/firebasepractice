@@ -37,6 +37,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
@@ -48,6 +51,7 @@ import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private val userViewModel: UserViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,8 +59,41 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FirestorePractiseTheme {
-                TopMainScreen(userViewModel, this)
+                Navigation(
+                    context = this,
+                    userViewModel = userViewModel,
+                    authViewModel = authViewModel
+                )
             }
+        }
+    }
+}
+
+@Composable
+fun Navigation(
+    context: ComponentActivity,
+    userViewModel: UserViewModel,
+    authViewModel: AuthViewModel
+) {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = Screen.Auth.route){
+
+        /* Auth */
+        composable(Screen.Auth.route){
+            TopAuthScreen(
+                navController = navController,
+                authViewModel = authViewModel
+            )
+        }
+
+        /* Home */
+        composable(Screen.Main.route){
+            TopMainScreen(
+                navController = navController,
+                userViewModel = userViewModel,
+                context = context
+            )
         }
     }
 }
