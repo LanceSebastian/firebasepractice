@@ -11,6 +11,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +41,8 @@ fun TopAuthScreen(
         register = { email, password ->
             authViewModel.register(email, password)
         },
-        logout = { authViewModel.logout() }
+        logout = { authViewModel.logout() },
+        goToMain = { navController.navigate(Screen.Main.route) }
     )
 }
 @Composable
@@ -49,10 +51,19 @@ fun AuthScreen(
     authStatus: String? = null,
     login: (String, String) -> Unit,
     register: (String, String) -> Unit,
-    logout: () -> Unit
+    logout: () -> Unit,
+    goToMain: () -> Unit,
+
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // Automatically navigate when auth state changes
+    LaunchedEffect(user) {
+        if (user != null) {
+            goToMain()
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -107,7 +118,8 @@ fun AuthScreenPreview(){
         AuthScreen(
             login = {_,_ ->},
             logout = {},
-            register = {_,_ ->}
+            register = {_,_ ->},
+            goToMain = {}
         )
     }
 }

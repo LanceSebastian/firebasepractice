@@ -4,6 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import java.util.Locale
 @Composable
 fun TopMainScreen(
     userViewModel: UserViewModel,
+    authViewModel: AuthViewModel,
     navController: NavController,
     context: ComponentActivity? = null
 ){
@@ -60,6 +62,7 @@ fun TopMainScreen(
         listenForPosts = { username ->
             userViewModel.listenForPosts(username)
         },
+        logOut = { authViewModel.logout() },
         posts = posts,
         context = context
     )
@@ -72,6 +75,7 @@ fun MainScreen(
     getUser: (String, (User?) -> Unit) -> Unit,
     getPostsFromUser: (String, (List<Post>) -> Unit) -> Unit,
     listenForPosts: (String) -> Unit,
+    logOut: () -> Unit,
     posts: List<Post> = emptyList(),
     context: ComponentActivity? = null
 ){
@@ -94,111 +98,131 @@ fun MainScreen(
         }
     }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
-        modifier = Modifier.fillMaxSize()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Column(
-                modifier = Modifier.weight(1f).padding(8.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("User")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f).padding(8.dp)
+                ) {
+                    Text("User")
 
-                TextField(
-                    value = usernameText,
-                    onValueChange = { usernameText = it },
-                    label = { Text("Username") }
-                )
+                    Spacer(Modifier.height(8.dp))
 
-                Spacer(Modifier.height(8.dp))
+                    TextField(
+                        value = usernameText,
+                        onValueChange = { usernameText = it },
+                        label = { Text("Username") }
+                    )
 
-                TextField(
-                    value = ageText,
-                    onValueChange = { ageText = it },
-                    label = { Text("Age") }
-                )
+                    Spacer(Modifier.height(8.dp))
 
-                // Add user to Firestore
-                Button(onClick = {
-                    if (context != null) addUser(user, context)
-                }) {
-                    Text("Add User to Firestore")
+                    TextField(
+                        value = ageText,
+                        onValueChange = { ageText = it },
+                        label = { Text("Age") }
+                    )
+
+                    // Add user to Firestore
+                    Button(onClick = {
+                        if (context != null) addUser(user, context)
+                    }) {
+                        Text("Add User")
+                    }
                 }
-            }
 
-            Column(
-                modifier = Modifier.weight(1f).padding(8.dp)
-            ) {
-                Text("Post")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f).padding(8.dp)
+                ) {
+                    Text("Post")
 
-                TextField(
-                    value = titleText,
-                    onValueChange = { titleText = it },
-                    label = { Text("Post: Title") }
-                )
+                    Spacer(Modifier.height(8.dp))
 
-                Spacer(Modifier.height(8.dp))
+                    TextField(
+                        value = titleText,
+                        onValueChange = { titleText = it },
+                        label = { Text("Post: Title") }
+                    )
 
-                TextField(
-                    value = contentText,
-                    onValueChange = { contentText = it },
-                    label = { Text("Post: Content") }
-                )
+                    Spacer(Modifier.height(8.dp))
 
-                Button(onClick = {
-                    if (context != null) addPost(searchUserText, post, context)
-                }) {
-                    Text("Add Post to User")
-                }
-            }
-        }
+                    TextField(
+                        value = contentText,
+                        onValueChange = { contentText = it },
+                        label = { Text("Post: Content") }
+                    )
 
-        TextField(
-            value = searchUserText,
-            onValueChange = { searchUserText = it },
-            label = { Text("Search Username") }
-        )
-
-        // Get user from Firestore
-        Button(onClick = {
-            getUser(searchUserText) { fetchedUser ->
-                // Handle the fetched user
-                if (fetchedUser != null ) {
-                    // Do something with the fetched user (display it in UI)
-                    displayUser = fetchedUser
-
-                } else {
-                    // Handle error (user not found)
-                    displayUser = null
-                    if (context != null) {
-                        Toast.makeText(context, "User not found!", Toast.LENGTH_SHORT).show()}
-                }
-            }
-        }) {
-            Text("Get User from Firestore")
-        }
-
-        if (displayUser != null) {
-            Text("User: ${displayUser!!.username} is ${displayUser!!.age} years old. ")
-            Button(onClick = { displayUser?.username?.let{ listenForPosts(it) } },
-                enabled = displayUser != null
-            ) {
-                Text("Get Posts from ${displayUser?.username ?: "User"}")
-            }
-        }
-
-        LazyColumn {
-            posts.forEach { post ->
-                item {
-                    Column {
-                        Text("${post.title}: ${convertTimestampToDate(post.timestamp)}")
-                        Text(post.content)
+                    Button(onClick = {
+                        if (context != null) addPost(searchUserText, post, context)
+                    }) {
+                        Text("Add Post to User")
                     }
                 }
             }
+
+            TextField(
+                value = searchUserText,
+                onValueChange = { searchUserText = it },
+                label = { Text("Search Username") }
+            )
+
+            // Get user from Firestore
+            Button(onClick = {
+                getUser(searchUserText) { fetchedUser ->
+                    if (fetchedUser != null) {
+                        displayUser = fetchedUser
+                    } else {
+                        displayUser = null
+                        context?.let {
+                            Toast.makeText(it, "User not found!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }) {
+                Text("Get User from Firestore")
+            }
+
+            if (displayUser != null) {
+                Text("User: ${displayUser!!.username} is ${displayUser!!.age} years old.")
+                Button(onClick = { displayUser?.username?.let { listenForPosts(it) } },
+                    enabled = displayUser != null
+                ) {
+                    Text("Get Posts from ${displayUser?.username ?: "User"}")
+                }
+            }
+
+            LazyColumn {
+                posts.forEach { post ->
+                    item {
+                        Column {
+                            Text("${post.title}: ${convertTimestampToDate(post.timestamp)}")
+                            Text(post.content)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Button at the bottom
+        Button(
+            onClick = { logOut() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        ) {
+            Text("Log Out")
         }
     }
 }
@@ -219,7 +243,8 @@ fun MainScreenPreview(){
             addUser = {_,_ ->},
             getUser = {_,_ ->},
             getPostsFromUser = {_,_ ->},
-            listenForPosts = {_ ->}
+            listenForPosts = {_ ->},
+            logOut = {}
         )
     }
 }

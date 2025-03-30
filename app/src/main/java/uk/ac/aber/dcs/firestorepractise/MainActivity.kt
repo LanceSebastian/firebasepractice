@@ -76,8 +76,18 @@ fun Navigation(
     authViewModel: AuthViewModel
 ) {
     val navController = rememberNavController()
+    val user by authViewModel.user.observeAsState() // Observe user state
 
-    NavHost(navController = navController, startDestination = Screen.Auth.route){
+    // Automatically navigate when auth state changes
+    LaunchedEffect(user) {
+        if (user == null) {
+            navController.navigate(Screen.Auth.route) {
+                popUpTo(Screen.Main.route) { inclusive = true } // Remove Main from stack
+            }
+        }
+    }
+
+    NavHost(navController = navController, startDestination = if (user == null) Screen.Auth.route else Screen.Main.route){
 
         /* Auth */
         composable(Screen.Auth.route){
@@ -92,6 +102,7 @@ fun Navigation(
             TopMainScreen(
                 navController = navController,
                 userViewModel = userViewModel,
+                authViewModel = authViewModel,
                 context = context
             )
         }
