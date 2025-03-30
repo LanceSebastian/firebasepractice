@@ -3,8 +3,6 @@ package uk.ac.aber.dcs.firestorepractise
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.firestore.toObjects
 import kotlinx.coroutines.tasks.await
 
 class FirestoreRepository {
