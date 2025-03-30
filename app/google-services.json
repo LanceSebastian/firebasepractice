@@ -12,7 +12,20 @@
           "package_name": "uk.ac.aber.dcs.firestorepractise"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "746333601632-u2liegmjsicoq6i144t48m4f9br93d92.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "uk.ac.aber.dcs.firestorepractise",
+            "certificate_hash": "2271edbac2d048159c5a2485d26fd5d0f02f8dfe"
+          }
+        },
+        {
+          "client_id": "746333601632-odiad1hfqf7viu4h771fnnc0ci75teco.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA7-KfT7rvg65ln55Ew4kEIdQFb7BXg44A"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "746333601632-odiad1hfqf7viu4h771fnnc0ci75teco.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

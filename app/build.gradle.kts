@@ -67,6 +67,7 @@ dependencies {
 
     // Firebase Authentication (optional)
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth")
 
     // Firebase Storage (optional)
     implementation("com.google.firebase:firebase-storage")
