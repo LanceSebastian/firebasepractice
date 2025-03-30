@@ -13,8 +13,8 @@ class UserViewModel : ViewModel() {
     private val firestoreRepository = FirestoreRepository()
 
     // LiveData or State for posts
-    private val _posts = MutableLiveData<List<Post>>()
-    val posts: LiveData<List<Post>> = _posts
+    private var _posts = MutableLiveData<List<Post>>()
+    var posts: LiveData<List<Post>> = _posts
 
     // Function to add user to Firestore
     fun addUser(user: User, context: Context) {

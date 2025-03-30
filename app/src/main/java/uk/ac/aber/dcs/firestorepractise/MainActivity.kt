@@ -37,6 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.firestorepractise.ui.theme.FirestorePractiseTheme
 import java.time.Instant
@@ -49,12 +51,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
         setContent {
             FirestorePractiseTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    TopMainScreen(userViewModel, this)
-                }
+                TopMainScreen(userViewModel, this)
             }
         }
     }
@@ -62,12 +63,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TopMainScreen(userViewModel: UserViewModel, context: ComponentActivity? = null){
+    val posts by userViewModel.posts.observeAsState(emptyList())
     MainScreen(
-        addUser = { user, context ->
-            userViewModel.addUser(user, context)
+        addUser = { user, thisContext ->
+            userViewModel.addUser(user, thisContext)
         },
-        addPost = { username, post, context ->
-            userViewModel.addPost(username, post, context)
+        addPost = { username, post, thisContext ->
+            userViewModel.addPost(username, post, thisContext)
         },
         getUser = { username, function ->
             userViewModel.getUser(username){ user ->
@@ -79,6 +81,10 @@ fun TopMainScreen(userViewModel: UserViewModel, context: ComponentActivity? = nu
                 function(postList)
             }
         },
+        listenForPosts = { username ->
+            userViewModel.listenForPosts(username)
+        },
+        posts = posts,
         context = context
     )
 }
@@ -89,24 +95,28 @@ fun MainScreen(
     addPost: (String, Post, Context) -> Unit,
     getUser: (String, (User?) -> Unit) -> Unit,
     getPostsFromUser: (String, (List<Post>) -> Unit) -> Unit,
+    listenForPosts: (String) -> Unit,
+    posts: List<Post> = emptyList(),
     context: ComponentActivity? = null
 ){
     var displayUser: User? by remember {mutableStateOf(null)}
-    var postList: List<Post> by remember { mutableStateOf(emptyList())}
 
     var usernameText: String by remember {mutableStateOf("")}
     var searchUserText: String by remember { mutableStateOf("")}
     var ageText: String by remember {mutableStateOf("")}
-    val ageInt = try {
-        ageText.toInt()
-    } catch (e: NumberFormatException) {
-        0
-    }
+    val ageInt = ageText.toIntOrNull() ?: 0
     var titleText: String by remember {mutableStateOf("")}
     var contentText: String by remember { mutableStateOf("")}
 
     val user = User(username = usernameText, age = ageInt)
     val post = Post(title = titleText, content = contentText)
+
+    // Listen for posts in real-time when the user is found
+    LaunchedEffect(displayUser?.username) {
+        displayUser?.username?.let{ username ->
+            listenForPosts(username)
+        }
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -163,7 +173,7 @@ fun MainScreen(
                 )
 
                 Button(onClick = {
-                    if (context != null) addPost(usernameText, post, context)
+                    if (context != null) addPost(searchUserText, post, context)
                 }) {
                     Text("Add Post to User")
                 }
@@ -187,7 +197,6 @@ fun MainScreen(
                 } else {
                     // Handle error (user not found)
                     displayUser = null
-                    postList = emptyList()
                     if (context != null) {Toast.makeText(context, "User not found!", Toast.LENGTH_SHORT).show()}
                 }
             }
@@ -197,28 +206,15 @@ fun MainScreen(
 
         if (displayUser != null) {
             Text("User: ${displayUser!!.username} is ${displayUser!!.age} years old. ")
-            Button(onClick = {
-                getPostsFromUser(searchUserText) { fetchedPosts ->
-                    // Handle the fetched user
-                    if (fetchedPosts.isNotEmpty() ) {
-                        // Do something with the fetched user (display it in UI)
-                        postList = fetchedPosts
-
-                    } else {
-                        // Handle error (user not found)
-                        displayUser = null
-                        postList = emptyList()
-                        if (context != null) {Toast.makeText(context, "User not found!", Toast.LENGTH_SHORT).show()}
-                    }
-
-                }
-            }) {
-                Text("Get Posts from ${displayUser!!.username}")
+            Button(onClick = { displayUser?.username?.let{ listenForPosts(it) } },
+                enabled = displayUser != null
+            ) {
+                Text("Get Posts from ${displayUser?.username ?: "User"}")
             }
         }
 
         LazyColumn {
-            postList.forEach { post ->
+            posts.forEach { post ->
                 item {
                     Column {
                         Text("${post.title}: ${convertTimestampToDate(post.timestamp)}")
@@ -242,7 +238,12 @@ fun convertTimestampToDate(timestamp: Long): String {
 @Composable
 fun MainScreenPreview(){
     FirestorePractiseTheme {
-        MainScreen(addPost = {_, _,_ -> }, addUser = {_,_ ->}, getUser = {_,_ ->}, getPostsFromUser = {_,_ ->})
+        MainScreen(addPost = {_, _,_ -> },
+            addUser = {_,_ ->},
+            getUser = {_,_ ->},
+            getPostsFromUser = {_,_ ->},
+            listenForPosts = {_ ->}
+            )
     }
 }
 
