@@ -38,8 +38,8 @@ fun TopAuthScreen(
         login = { email, password ->
             authViewModel.login(email, password)
         },
-        register = { email, password ->
-            authViewModel.register(email, password)
+        register = { email, password, username ->
+            authViewModel.register(email, password, username)
         },
         logout = { authViewModel.logout() },
         goToMain = { navController.navigate(Screen.Main.route) }
@@ -50,12 +50,13 @@ fun AuthScreen(
     user: FirebaseUser? = null,
     authStatus: String? = null,
     login: (String, String) -> Unit,
-    register: (String, String) -> Unit,
+    register: (String, String, String) -> Unit,
     logout: () -> Unit,
     goToMain: () -> Unit,
 
 ) {
     var email by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     // Automatically navigate when auth state changes
@@ -81,6 +82,13 @@ fun AuthScreen(
         )
 
         OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
@@ -94,7 +102,7 @@ fun AuthScreen(
                 Text("Login")
             }
 
-            Button(onClick = { register(email, password) }, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = { register(email, password, username) }, modifier = Modifier.fillMaxWidth()) {
                 Text("Register")
             }
         } else {
@@ -118,7 +126,7 @@ fun AuthScreenPreview(){
         AuthScreen(
             login = {_,_ ->},
             logout = {},
-            register = {_,_ ->},
+            register = {_,_,_ ->},
             goToMain = {}
         )
     }

@@ -42,6 +42,7 @@ fun TopMainScreen(
     context: ComponentActivity? = null
 ){
     val posts by userViewModel.posts.observeAsState(emptyList())
+    val username by authViewModel.username.observeAsState("")
     MainScreen(
         addUser = { user, thisContext ->
             userViewModel.addUser(user, thisContext)
@@ -63,6 +64,7 @@ fun TopMainScreen(
             userViewModel.listenForPosts(username)
         },
         logOut = { authViewModel.logout() },
+        username = username,
         posts = posts,
         context = context
     )
@@ -76,6 +78,7 @@ fun MainScreen(
     getPostsFromUser: (String, (List<Post>) -> Unit) -> Unit,
     listenForPosts: (String) -> Unit,
     logOut: () -> Unit,
+    username: String? = "",
     posts: List<Post> = emptyList(),
     context: ComponentActivity? = null
 ){
@@ -108,6 +111,8 @@ fun MainScreen(
             verticalArrangement = Arrangement.Top,
             modifier = Modifier.fillMaxSize()
         ) {
+            Spacer(Modifier.height(8.dp))
+            Text("Hello, ${username ?: "how are you?"}")
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
